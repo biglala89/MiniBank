@@ -2,44 +2,23 @@ import os
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy import Table, Column, String, Integer, Float, ForeignKey
 
-# os.chdir('/Users/chowli/Documents/Springboard_DE/Projects/mini-projects/Banking_System/data_src')
-# engine = create_engine('sqlite:///customers.db')
-# metadata = MetaData()
-# metadata.create_all(engine)
-# print(engine.table_names())
 
-
-class database:
+class Database:
 
     def __init__(self, db_name):
         self.db_name = db_name
-        # self.src = '/Users/chowli/Documents/Springboard_DE/Projects/mini-projects/Banking_System/data_src'
-        self.engine = create_engine('sqlite:///{}.db'.format(self.db_name))
+        self.dstn = '../../data_src'
+        self.engine = create_engine(
+            'sqlite:///{}/{}.db'.format(self.dstn, self.db_name))
+        self.connection = None
         self.metadata = MetaData()
-        self.tables = None
 
-    def construct_table(self, table_name):
-        # define a table constructor method instead
-        if not self.tables:
-            self.tables = []
+    def establish_conn(self):
+        self.connection = self.engine.connect()
+        return self.connection
 
-        customer_accounts = Table('customer_accounts', self.metadata,
-                                  Column('customer_id', Integer(),
-                                         primary_key=True),
-                                  Column('first_name', String(30)),
-                                  Column('last_name', String(30)),
-                                  keep_existing=True
-                                  )
-
-        customer_records = Table('customer_records', self.metadata,
-                                 Column('customer_id', Integer(), ForeignKey(
-                                     'customer_accounts.customer_id')),
-                                 Column('account_type', String(20)),
-                                 Column('balance', Float()),
-                                 keep_existing=True
-                                 )
-
-        self.tables = [customer_accounts, customer_records]
+    def construct_table(self):
+        self.tables = []
         return self.tables
 
     def create_tables(self):
@@ -48,14 +27,39 @@ class database:
         for table in self.tables:
             table.create(self.engine, checkfirst=True)
 
-    def query_records(self, table_name):
-        connection = self.engine.connect()
-        stmt = 'select * from {}'.format(str(table_name))
-        results = connection.execute(stmt).fetchall()
+    def query_records(self, stmt):
+        results = self.connection.execute(stmt).fetchall()
         return results
 
-    def write_records(self):
-        pass
+    def write_records(self, stmt):
+        self.connection.execute(stmt)
+        return
 
     def print_tablenames(self):
-        print(self.engine.table_names())
+        return self.engine.table_names()
+
+
+class CustomersDB(Database):
+
+    def __init__(self, db_name):
+        super().__init__(db_name)
+
+    def construct_table(self):
+        customer_accounts = Table('customers', self.metadata,
+                                  Column('customer_id', Integer(),
+                                         primary_key=True),
+                                  Column('first_name', String(30)),
+                                  Column('last_name', String(30)),
+                                  keep_existing=True
+                                  )
+
+        customer_records = Table('accounts', self.metadata,
+                                 Column('customer_id', Integer(), ForeignKey(
+                                     'customers.customer_id')),
+                                 Column('account_type', String(20)),
+                                 Column('balance', Float()),
+                                 keep_existing=True
+                                 )
+
+        self.tables = [customer_accounts, customer_records]
+        return self.tables

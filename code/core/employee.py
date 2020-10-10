@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+from database import CustomersDB
 
 
 class NamingError(ValueError):
@@ -10,15 +11,13 @@ class NamingError(ValueError):
 class Employee:
     """Docstring
     """
-    # __current_path = os.getcwd()
-    __customer_records = '../data/customer_data.csv'
-    __customer_acct = '../data/customer_acct.csv'
     __valid_accounts = ['savings', 'checkings']
 
     def __init__(self, emp_id, first, last):
         self.__id = emp_id
         self.__first = first
         self.__last = last
+        self.__database = CustomersDB('customers')
 
     def __repr__(self):
         return "Employee('{name}', employee_id: {eid})".format(name=self.fullname, eid=self.__id)
@@ -42,75 +41,71 @@ class Employee:
         self.__first, self.__last = new_name.split()
         return self.__first, self.__last
 
-    def _read_file(self, file):
-        return pd.read_csv(file)
+    def _retrive_records(self, stmt):
+        self.__database.establish_conn()
+        return self.__database.query_records(stmt)
 
-    def check_customer(self, customer_id, customer_file=__customer_records):
+    def check_customer(self, customer_id):
         """Looks up customer record
         """
-        customer_table = self._read_file(customer_file)
-        # customer_table = pd.read_csv(customer_file)
-        customer_table.set_index('customer_id')
-        if customer_id <= customer_table['customer_id'].max():
-            print(customer_table[customer_table['customer_id'] == customer_id])
-            return True
-        else:
-            print('Customer not found')
-            return False
+        stmt = "select * from customers where customer_id = {}".format(
+            customer_id)
+        results = self._retrive_records(stmt)
+        print(results)
 
-    def open_account(self, customer_id, first_name, last_name, acct_type=None, opening_deposit=0,
-                     cust_acct=__customer_acct, cust_data=__customer_records, valid_acct_types=__valid_accounts):
+        if len(results) == 0:
+            return False
+        return True
+
+    def open_account(self, first_name, last_name, customer_id=None, acct_type=None, opening_deposit=0, valid_acct_types=__valid_accounts):
         """
         Opens account(s) for customer. Should not allow self-opened account(s)
         """
         # create a new method to validate all inputs
-        if self._is_str_account(acct_type) and self._is_valid_account(acct_type) and self._is_valid_deposit(opening_deposit):
+        if self._is_str_account(acct_type) or self._is_valid_account(acct_type) or self._is_valid_deposit(opening_deposit):
             print('entered block...')
-            customer_table = self._read_file(cust_acct)
-            if len(customer_table) == 0:
-                customer_id = 1
-                self.__add_customer_record(customer_id, first_name, last_name)
-                self.__add_account_info(
-                    customer_id, acct_type, opening_deposit)
-            else:
-                account_records = customer_table[customer_table['customer_id']
-                                                 == customer_id]
-                if len(account_records) == 0:
-                    customer_id = account_records['customer_id'].max() + 1
-                    self.__add_customer_record(
-                        customer_id, first_name, last_name)
-                    self.__add_account_info(
-                        customer_id, acct_type, opening_deposit)
-                # what if allowed types are more than two? consider how to cope with it
-                elif len(account_records) == 1:
-                    new_acct_type = valid_acct_types - \
-                        set(account_records['account_type'].unique())
-                    self.__add_account_info(
-                        customer_id, new_acct_type, opening_deposit)
+            # a customer with an id should exist in our databse
+            if customer_id:
+                # retrive account type on file and figure out the other type to add
+                stmt = "select account_type from accounts where customer_id = {}".format(
+                    customer_id)
+                existing_account = self._retrive_records(stmt)
+                print(existing_account)
+                if len(existing_account) == 0:
+                    account_to_add = acct_type
+                elif len(existing_account) == 2:
+                    return 'No more accounts can be opened.'
                 else:
-                    print('All available accounts have been set up.')
+                    account_to_add = valid_acct_types[existing_account not in valid_acct_types]
+                print('Account to be added is: ', account_to_add)
+                self._add_account(customer_id, acct_type, opening_deposit)
+            elif customer_id is None:
+                self._add_customer(customer_id, first_name, last_name)
+                self._add_account(customer_id, acct_type, opening_deposit)
 
-    def __add_customer_record(self, new_cust_id, new_first, new_last, dstn_file=__customer_records):
-        new_rows = pd.DataFrame(
-            [{new_cust_id, new_first, new_last}], columns=['customer_id', 'first_name', 'last_name'])
-        new_rows.to_csv(dstn_file, index=False, header=False, mode='a')
+    def _add_customer(self, customer_id, first_name, last_name):
+        stmt = "insert into customers values ({}, {}, {})".format(
+            customer_id, first_name, last_name)
+        self.__database.establish_conn()
+        self.__database.write_records(stmt)
 
-    def __add_account_info(self, new_cust_id, acct_type, opening_deposit, dstn_file=__customer_acct):
-        new_rows = pd.DataFrame(
-            [{new_cust_id, acct_type, opening_deposit}], columns=['customer_id', 'account_type', 'balance'])
-        new_rows.to_csv(dstn_file, index=False, header=False, mode='a')
+    def _add_account(self, customer_id, acct_type, opening_deposit):
+        stmt = "insert into accounts values ({}, {}, {})".format(
+            customer_id, acct_type, opening_deposit)
+        self.__database.establish_conn()
+        self.__database.write_records(stmt)
 
     def _is_str_account(self, acct_type):
         if not isinstance(acct_type, str):
-            raise ValueError('Account type needs to be a string')
+            raise TypeError('Account type needs to be a string')
         return True
 
     def _is_valid_account(self, acct_type, valid_acct_types=__valid_accounts):
         if acct_type.lower() not in valid_acct_types:
-            raise ValueError('Invalid account type!')
+            raise KeyError('Invalid account type!')
         return True
 
     def _is_valid_deposit(self, amount):
         if amount < 0:
-            raise ValueError('Deposit can not be negative')
+            raise ValueError('Deposit can NOT be negative')
         return True
