@@ -4,10 +4,10 @@ from database import CustomersDB
 
 class Bank:
     def __init__(self):
-        # self.db = CustomersDB('customers')
-        # self.db.establish_conn()
-        # self.db.construct_table()
-        # self.db.create_tables()
+        self.db = CustomersDB('customers')
+        self.db.establish_conn()
+        self.db.construct_table()
+        self.db.create_tables()
         print('Welcome to ABC Bank! Database is ready to use. You must be logged in to proceed.')
 
     def employee_log_in(self, emp_id, first, last):
