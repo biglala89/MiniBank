@@ -1,6 +1,6 @@
 import logging
-import os
-from database import CustomersDB
+from .database import CustomersDB
+from .validation.Validate import validate_inputs
 
 
 class Employee:
@@ -46,7 +46,8 @@ class Employee:
         """
 
         # make sure all the inputs are valid
-        if self._validate_inputs(first_name, last_name, acct_type, opening_deposit):
+        # if self._validate_inputs(first_name, last_name, acct_type, opening_deposit):
+        if validate_inputs(first_name, last_name, acct_type, self.__VALID_ACCOUNTS, opening_deposit):
 
             # a customer with an id should exist in our databse
             if customer_id:
@@ -90,23 +91,23 @@ class Employee:
             customer_id, acct_type, opening_deposit)
         self.__database.write_records(stmt)
 
-    def _is_valid_name(self, first_name, last_name):
-        if not isinstance(first_name, str) or not isinstance(last_name, str):
-            raise TypeError(
-                'Please enter a valid name! Names must be strings.')
-        return True
+    # def _is_valid_name(self, first_name, last_name):
+    #     if not isinstance(first_name, str) or not isinstance(last_name, str):
+    #         raise TypeError(
+    #             'Please enter a valid name! Names must be strings.')
+    #     return True
 
-    def _is_valid_account(self, acct_type):
-        if not isinstance(acct_type, str):
-            raise TypeError('Account type needs to be a string!')
-        if acct_type.lower() not in self.__VALID_ACCOUNTS:
-            raise KeyError('Invalid account type!')
-        return True
+    # def _is_valid_account(self, acct_type):
+    #     if not isinstance(acct_type, str):
+    #         raise TypeError('Account type needs to be a string!')
+    #     if acct_type.lower() not in self.__VALID_ACCOUNTS:
+    #         raise KeyError('Invalid account type!')
+    #     return True
 
-    def _is_valid_deposit(self, amount):
-        if amount < 0:
-            raise ValueError('Deposit can NOT be negative!')
-        return True
+    # def _is_valid_deposit(self, amount):
+    #     if amount < 0:
+    #         raise ValueError('Deposit can NOT be negative!')
+    #     return True
 
-    def _validate_inputs(self, first_name, last_name, acct_type, opening_deposit):
-        return self._is_valid_name(first_name, last_name) and self._is_valid_account(acct_type) and self._is_valid_deposit(opening_deposit)
+    # def _validate_inputs(self, first_name, last_name, acct_type, opening_deposit):
+    #     return self._is_valid_name(first_name, last_name) and self._is_valid_account(acct_type) and self._is_valid_deposit(opening_deposit)

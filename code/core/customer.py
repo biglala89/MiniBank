@@ -8,3 +8,16 @@ class Customers:
         """Returns full name of the person
         """
         return '{} {}'.format(self.__first, self.__last)
+
+    @property
+    def balance(self):
+        pass
+
+    def deposit(self):
+        pass
+
+    def withdraw(self):
+        pass
+
+    def transfer_funds(self):
+        pass
