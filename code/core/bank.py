@@ -4,17 +4,19 @@ from database import CustomersDB
 
 class Bank:
     def __init__(self):
-        self.db = CustomersDB('customers')
+        print('Welcome to ABC Bank! You must be logged in to proceed.')
+
+    def employee_log_in(self, emp_id, first, last, db_name):
+        """Authenticates employees
+        """
+        self.db = CustomersDB(db_name)
         self.db.establish_conn()
         self.db.construct_table()
         self.db.create_tables()
-        print('Welcome to ABC Bank! Database is ready to use. You must be logged in to proceed.')
-
-    def employee_log_in(self, emp_id, first, last):
-        """Authenticates employees"""
         # need to authenticate employee first and then returns instance
         # features needed here
-        self.employee = Employee(emp_id, first, last)
+        self.employee = Employee(emp_id, first, last, db_name)
+        print('You are logged in. Databse is ready.')
         return self.employee
 
     def customer_log_in(self):

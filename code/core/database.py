@@ -1,4 +1,3 @@
-import os
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy import Table, Column, String, Integer, Float, ForeignKey, Index
 from sqlalchemy.schema import UniqueConstraint
@@ -48,7 +47,7 @@ class CustomersDB(Database):
     def construct_table(self):
         customer_accounts = Table('customers', self.metadata,
                                   Column('customer_id', Integer(),
-                                         primary_key=True, unique=True),
+                                         primary_key=True),
                                   Column('first_name', String(30)),
                                   Column('last_name', String(30)),
                                   keep_existing=True
@@ -57,7 +56,8 @@ class CustomersDB(Database):
         customer_records = Table('accounts', self.metadata,
                                  Column('customer_id', Integer(), ForeignKey(
                                      'customers.customer_id')),
-                                 Column('account_type', String(20)),
+                                 Column('account_type', String(
+                                     20), nullable=False),
                                  Column('balance', Float(), nullable=True),
                                  UniqueConstraint(
                                      'customer_id', 'account_type', name='uniq_cust_acct'),
