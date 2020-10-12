@@ -4,13 +4,10 @@ import pandas as pd
 from database import CustomersDB
 
 
-class NamingError(ValueError):
-    pass
-
-
 class Employee:
     """Docstring
     """
+
     __VALID_ACCOUNTS = ['savings', 'checkings']
 
     def __init__(self, emp_id, first, last):
@@ -48,31 +45,36 @@ class Employee:
         """
         Opens account(s) for customer. Should not allow self-opened account(s)
         """
+
         # validate all inputs
         if self._is_str_account(acct_type) and self._is_valid_account(acct_type) and self._is_valid_deposit(opening_deposit):
 
             # a customer with an id should exist in our databse
             if customer_id:
                 # retrive account type on file and figure out the right account to add
-                stmt = "SELECT ACCOUNT_TYPE, BALANCE FROM ACCOUNTS WHERE CUSTOMER_ID = {}".format(
+                stmt = "SELECT ACCOUNT_TYPE FROM ACCOUNTS WHERE CUSTOMER_ID = {}".format(
                     customer_id)
                 existing_account = self._retrive_records(stmt)
                 print('Records show customer has {} in the system'.format(
                     existing_account))
 
-                # even if customer_id is provided, if record shows zero account, customer needs to be initialized in the system first
+                # even if customer_id is provided, if account shows zero record, customer needs to be initialized in the system first
                 if len(existing_account) == 0:
                     account_to_add = acct_type
                     self._add_customer(customer_id, first_name, last_name)
+                    # self._add_account(customer_id, acct_type, opening_deposit)
 
                 elif len(existing_account) == len(self.__VALID_ACCOUNTS):
                     return 'No more accounts can be opened.'
 
                 else:
-                    account_to_add = self.__VALID_ACCOUNTS[existing_account not in self.__VALID_ACCOUNTS]
+                    available_accts = set(self.__VALID_ACCOUNTS) - \
+                        set(existing_account[0])
+                    account_to_add = available_accts.pop()
                 print('Account to be added is: ', account_to_add)
-                self._add_account(customer_id, acct_type, opening_deposit)
+                self._add_account(customer_id, account_to_add, opening_deposit)
 
+            # for new customer with no customer_id create customer record and open an account
             elif customer_id is None:
                 self._add_customer(customer_id, first_name, last_name)
                 self._add_account(customer_id, acct_type, opening_deposit)
