@@ -7,7 +7,8 @@ class Employee:
     """Docstring
     """
 
-    __VALID_ACCOUNTS = ['savings', 'checkings']
+    __VALID_ACCOUNTS = ['SAVINGS', 'CHECKINGS']
+    # __DEFAULT_DB = 'customers'
 
     def __init__(self, emp_id, first, last, db_name):
         self.__id = emp_id
@@ -46,7 +47,6 @@ class Employee:
         """
 
         # make sure all the inputs are valid
-        # if self._validate_inputs(first_name, last_name, acct_type, opening_deposit):
         if vld().validate_inputs(first_name, last_name, acct_type, self.__VALID_ACCOUNTS, opening_deposit):
 
             # a customer with an id should exist in our databse
@@ -83,10 +83,10 @@ class Employee:
 
     def _add_customer(self, customer_id, first_name, last_name):
         stmt = "INSERT INTO CUSTOMERS VALUES ('{}', '{}', '{}')".format(
-            customer_id, first_name, last_name)
+            customer_id, first_name.upper(), last_name.upper())
         self.__database.write_records(stmt)
 
     def _add_account(self, customer_id, acct_type, opening_deposit):
         stmt = "INSERT INTO ACCOUNTS VALUES ('{}', '{}', '{}')".format(
-            customer_id, acct_type, opening_deposit)
+            customer_id, acct_type.upper(), opening_deposit)
         self.__database.write_records(stmt)
