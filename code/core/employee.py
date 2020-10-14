@@ -1,10 +1,11 @@
 import logging
 from database import CustomersDB
-from validation import Validate as vld
+from validation import Validate
 
 
 class Employee:
-    """Docstring
+    """Create employee instances.
+        Employees are given access to look up customer's account information, open accounts for customers to update customer database.
     """
 
     __VALID_ACCOUNTS = ['SAVINGS', 'CHECKINGS']
@@ -15,6 +16,7 @@ class Employee:
         self.__last = last
         self.__database = CustomersDB(db_name)
         self.__database.establish_conn()
+        self.__validator = Validate()
 
     def __repr__(self):
         return "Employee('{name}', employee_id: {eid})".format(name=self.fullname, eid=self.__id)
@@ -46,7 +48,7 @@ class Employee:
         """
 
         # make sure all the inputs are valid
-        if vld().validate_inputs(first_name, last_name, acct_type, self.__VALID_ACCOUNTS, opening_deposit):
+        if self.__validator.validate_inputs(first_name, last_name, acct_type, self.__VALID_ACCOUNTS, opening_deposit):
 
             # a customer with an id should exist in our databse
             if customer_id:
