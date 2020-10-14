@@ -8,7 +8,6 @@ class Employee:
     """
 
     __VALID_ACCOUNTS = ['SAVINGS', 'CHECKINGS']
-    # __DEFAULT_DB = 'customers'
 
     def __init__(self, emp_id, first, last, db_name):
         self.__id = emp_id
