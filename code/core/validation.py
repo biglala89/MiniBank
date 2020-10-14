@@ -25,8 +25,14 @@ class Validate:
         return True
 
     def _is_valid_deposit(self, amount):
-        if amount < 0:
-            raise ValueError('Deposit can NOT be negative!')
+        if amount <= 0:
+            raise ValueError('Deposit must be positive!')
+        return True
+
+    def _is_valid_balance(self, balance):
+        if balance < 0:
+            raise ValueError(
+                'Insuffient fund available for this transaction. Transaction cancelled.')
         return True
 
 

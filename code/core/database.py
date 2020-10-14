@@ -63,10 +63,5 @@ class CustomersDB(Database):
                                      'customer_id', 'account_type', name='uniq_cust_acct'),
                                  keep_existing=True
                                  )
-
-        # CREATE COMPOSITE KEY FIRST!!!
-        # Index('myindex', self.db_name.customer_records.customer_id,
-        #       self.db_name.customer_records.account_type, unique=True)
-
         self.tables = [customer_accounts, customer_records]
         return self.tables
