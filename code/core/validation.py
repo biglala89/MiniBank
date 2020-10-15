@@ -50,5 +50,5 @@ class CustomerValidate(Validate):
         active_ids = db.query_records(stmt)
         if customer_id not in set(map(lambda x: x[0], active_ids)):
             raise IndentityError(
-                "Our system does not show your record. Let's open an account for you!")
+                "Our system shows no record for this customer")
         return True

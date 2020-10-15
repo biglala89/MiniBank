@@ -10,9 +10,6 @@ class Customer:
         For simplicity, assume customer_id can be used by customer as an identifier when interacting with system.
     """
     __VALID_ACCOUTS = ['SAVINGS', 'CHECKINGS']
-    __TRANSFER_BETWEEN = {'CHECKINGS': (
-        'SAVINGS', 'OTHER'), 'SAVINGS': ('CHECKINGS', 'OTHER')}
-    __OUT_OF_NETWORK_TRANSFER_RATE = 0.001
 
     def __init__(self, cust_id, first, last, db_name):
         self.__id = cust_id
@@ -51,8 +48,8 @@ class Customer:
         new_bal = cur_bal + amount
         print('Your new balance in {} is: ${}'.format(
             acct_type.upper(), new_bal))
+        self.__update_balance(acct_type, new_bal)
         return new_bal
-        # update_record()
 
     def withdraw(self, acct_type, amount):
         """Withdraw from customer's account
@@ -63,13 +60,13 @@ class Customer:
             self.__validator._is_valid_balance(remaining_bal)
             print('Remaining balance in {} is: ${}'.format(
                 acct_type.upper(), remaining_bal))
+            self.__update_balance(acct_type, remaining_bal)
             return (True, remaining_bal)
         except ValueError as e:
             print(e)
             print('Your {} balance remains the same: ${}'.format(
                 acct_type.upper(), cur_bal))
             return (False, cur_bal)
-        # update_record()
 
     def transfer_funds(self, from_acct, to_acct, amount):
         if from_acct.upper() == to_acct.upper():
@@ -91,3 +88,16 @@ class Customer:
             stmt = "SELECT BALANCE FROM ACCOUNTS WHERE CUSTOMER_ID = {} AND ACCOUNT_TYPE = '{}'".format(
                 self.__id, acct_type.upper())
             return self.__database.query_records(stmt)[0][0]
+
+    def __update_balance(self, acct_type, amount):
+        stmt = """
+                UPDATE ACCOUNTS
+                SET BALANCE = {}
+                WHERE CUSTOMER_ID = {}
+                AND ACCOUNT_TYPE = '{}'
+                """.format(amount, self.__id, acct_type.upper())
+        try:
+            self.__database.write_records(stmt)
+        except ValueError as e:
+            print(e)
+            print('Transaction rolled back...')
