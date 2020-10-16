@@ -7,7 +7,7 @@ class Bank:
     """Create a bank system that allows users to interact with.
     This is the main entrance to this bank system program.
     """
-    __DEFAULT_DB = 'ttt'
+    __DEFAULT_DB = 'wtf'
 
     def __init__(self):
         self.db = CustomersDB(self.__DEFAULT_DB)

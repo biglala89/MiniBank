@@ -40,15 +40,20 @@ class CustomerValidate(Validate):
     """Extend validations for customer instances.
     """
 
-    def validate_inputs(self, customer_id, db, acct_type, valid_acct, opening_deposit):
-        return self._is_active_customer(customer_id, db) and \
+    def validate_inputs(self, customer_id, first_name, last_name, db, acct_type, valid_acct, opening_deposit):
+        return self._is_valid_customer(customer_id, first_name, last_name, db) and \
             self._is_valid_account(acct_type, valid_acct) and \
             self._is_valid_deposit(opening_deposit)
 
-    def _is_active_customer(self, customer_id, db):
-        stmt = "SELECT CUSTOMER_ID FROM CUSTOMERS"
-        active_ids = db.query_records(stmt)
-        if customer_id not in set(map(lambda x: x[0], active_ids)):
+    def _is_valid_customer(self, customer_id, first_name, last_name, db):
+        stmt = "SELECT FIRST_NAME, LAST_NAME FROM CUSTOMERS WHERE CUSTOMER_ID = {}".format(
+            customer_id)
+        res = db.query_records(stmt)
+        if not res:
             raise IndentityError(
-                "Our system shows no record for this customer")
+                "Our system shows no record for this customer_id!")
+        res_first_name, res_last_name = res[0]
+        if res_first_name != first_name.upper() or res_last_name != last_name.upper():
+            raise IndentityError(
+                "Customer name does not match records on file!")
         return True

@@ -59,8 +59,8 @@ class CustomersDB(Database):
                                  Column('account_type', String(
                                      20), nullable=False),
                                  Column('balance', Float(), nullable=True),
-                                 UniqueConstraint(
-                                     'customer_id', 'account_type', name='uniq_cust_acct'),
+                                 #  UniqueConstraint(
+                                 #      'customer_id', 'account_type', name='uniq_cust_acct'),
                                  keep_existing=True
                                  )
         self.tables = [customer_accounts, customer_records]

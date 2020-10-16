@@ -31,7 +31,9 @@ class Customer:
     def check_balance(self, acct_type):
         """Returns customer's current account balance.
         """
-        if self.__validator._is_active_customer(self.__id, self.__database) and self.__validator._is_valid_account(acct_type, self.__VALID_ACCOUTS):
+        if self.__validator._is_valid_customer(self.__id, self.__first, self.__last, self.__database) and \
+                self.__validator._is_valid_name(self.__first, self.__last) and \
+                self.__validator._is_valid_account(acct_type, self.__VALID_ACCOUTS):
             stmt = """SELECT C.CUSTOMER_ID, FIRST_NAME, LAST_NAME, ACCOUNT_TYPE, BALANCE 
                         FROM CUSTOMERS C 
                         INNER JOIN ACCOUNTS A 
@@ -62,12 +64,12 @@ class Customer:
             print('Remaining balance in {} is: ${}'.format(
                 acct_type.upper(), remaining_bal))
             self.__update_balance(acct_type, remaining_bal)
-            return (True, remaining_bal)
+            return True, remaining_bal
         except ValueError as e:
             print(e)
             print('Your {} balance remains the same: ${}'.format(
                 acct_type.upper(), cur_bal))
-            return (False, cur_bal)
+            return False, cur_bal
 
     def transfer_funds(self, from_acct, to_acct, amount):
         """Transfer money between own accounts.
@@ -80,16 +82,18 @@ class Customer:
             to_bal = self.deposit(to_acct, amount)
             print('Final balances: ({}: ${}), ({}: ${})\n'.format(
                 from_acct.upper(), from_bal, to_acct.upper(), to_bal))
+            return (from_bal, to_bal)
         else:
             to_bal = self._get_balance(to_acct, amount)
-            print(to_bal)
             print('Final balances: ({}: ${}), ({}: ${})\n'.format(
                 from_acct.upper(), from_bal, to_acct.upper(), to_bal))
+            return (from_bal, to_bal)
 
     def _get_balance(self, acct_type, amount):
         """Validate inputs and get current account balance.
         """
-        if self.__validator.validate_inputs(self.__id, self.__database, acct_type, self.__VALID_ACCOUTS, amount):
+        if self.__validator.validate_inputs(self.__id, self.__first, self.__last, self.__database,
+                                            acct_type, self.__VALID_ACCOUTS, amount):
             stmt = "SELECT BALANCE FROM ACCOUNTS WHERE CUSTOMER_ID = {} AND ACCOUNT_TYPE = '{}'".format(
                 self.__id, acct_type.upper())
             return self.__database.query_records(stmt)[0][0]
