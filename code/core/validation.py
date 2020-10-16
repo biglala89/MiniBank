@@ -2,6 +2,10 @@ class IndentityError(ValueError):
     pass
 
 
+class BalanceError(ValueError):
+    pass
+
+
 class Validate:
     """Make sure inputs are valid
     """
@@ -31,7 +35,7 @@ class Validate:
 
     def _is_valid_balance(self, balance):
         if balance < 0:
-            raise ValueError(
+            raise BalanceError(
                 'Insuffient fund available for this transaction. Transaction cancelled.')
         return True
 
