@@ -69,7 +69,7 @@ class Employee:
                 else:
                     print(
                         'This account has already been opened, we will open another account for you')
-                    # improve logic here. What if valid accounts extends beyond two types?
+
                     available_accts = set(self.__VALID_ACCOUNTS) - \
                         set(existing_account[0])
                     account_to_add = available_accts.pop()
