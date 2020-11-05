@@ -1,4 +1,4 @@
-## Banking system made for interested users.
+## Mini Bank for Petty Cash
 
 
 Banking system entrance:
